@@ -1,0 +1,31 @@
+strategy,decile,decile_label,marginal_uplift
+X-learner CATE,1,Bottom 10%,32.77543684738248
+X-learner CATE,2,2nd Decile,32.11483164413903
+X-learner CATE,3,3rd Decile,24.65936939738458
+X-learner CATE,4,4th Decile,21.827671930317138
+X-learner CATE,5,5th Decile,43.82493338030008
+X-learner CATE,6,6th Decile,34.350496776164164
+X-learner CATE,7,7th Decile,113.42658423536159
+X-learner CATE,8,8th Decile,216.58467682187847
+X-learner CATE,9,9th Decile,506.3413278797502
+X-learner CATE,10,Top 10%,2148.9991690010233
+"Exposure P(E|T=1,X)",1,Bottom 10%,28.733907588013608
+"Exposure P(E|T=1,X)",2,2nd Decile,25.03064967688624
+"Exposure P(E|T=1,X)",3,3rd Decile,26.832643916825873
+"Exposure P(E|T=1,X)",4,4th Decile,26.30622465761462
+"Exposure P(E|T=1,X)",5,5th Decile,60.80109386303184
+"Exposure P(E|T=1,X)",6,6th Decile,67.23572585935426
+"Exposure P(E|T=1,X)",7,7th Decile,115.61943973253346
+"Exposure P(E|T=1,X)",8,8th Decile,301.8618551746863
+"Exposure P(E|T=1,X)",9,9th Decile,458.2085515407007
+"Exposure P(E|T=1,X)",10,Top 10%,2064.274405904054
+Expected Uplift P(E)×LATE(X),1,Bottom 10%,158.74827873692584
+Expected Uplift P(E)×LATE(X),2,2nd Decile,43.238813938904514
+Expected Uplift P(E)×LATE(X),3,3rd Decile,23.000378459124022
+Expected Uplift P(E)×LATE(X),4,4th Decile,42.69349494095741
+Expected Uplift P(E)×LATE(X),5,5th Decile,26.31115458114482
+Expected Uplift P(E)×LATE(X),6,6th Decile,39.56161438168101
+Expected Uplift P(E)×LATE(X),7,7th Decile,137.3714924429005
+Expected Uplift P(E)×LATE(X),8,8th Decile,194.85101636013223
+Expected Uplift P(E)×LATE(X),9,9th Decile,381.4184711062926
+Expected Uplift P(E)×LATE(X),10,Top 10%,2127.709782965638

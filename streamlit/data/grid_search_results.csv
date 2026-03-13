@@ -1,0 +1,5 @@
+learner,best_learning_rate,best_scale_pos_weight,best_max_depth
+S-Learner,0.1,10,5
+T-Learner,0.3,10,7
+X-Learner,0.1,10,5
+R-Learner,0.1,1,5
