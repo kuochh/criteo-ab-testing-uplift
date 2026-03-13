@@ -21,7 +21,7 @@ with st.sidebar:
     st.markdown(
         "[GitHub](https://github.com/kuochh/criteo-ab-testing-uplift) · "
         "[Portfolio](https://kuochh.github.io) · "
-        "[LinkedIn](https://linkedin.com/in/kuochh)"
+        "[LinkedIn](https://linkedin.com/in/chia-hung-kuo)"
     )
 
 pg.run()
