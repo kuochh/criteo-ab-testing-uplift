@@ -38,8 +38,8 @@ See the [Reachability-Responsiveness Map](https://criteo-ab-testing.streamlit.ap
 | Path | Description |
 |------|-------------|
 | `streamlit/pages/prologue.py` | Context: experiment design & non-compliance problem |
-| `streamlit/pages/act1.py` | Standard uplift modeling — meta-learner comparison, decile analysis |
-| `streamlit/pages/act2.py` | CATE's blind spot — correlation with exposure probability |
+| `streamlit/pages/act1.py` | Standard uplift modeling: meta-learner comparison, decile analysis |
+| `streamlit/pages/act2.py` |CATE's blind spot: correlation with exposure probability |
 | `streamlit/pages/act3.py` | IV decomposition, LATE estimation & bidding strategy quadrant |
 | `notebooks/01_eda.ipynb` | Exploratory data analysis & randomization validation |
 | `notebooks/02_uplift_cate.ipynb` | CATE estimation with EconML meta-learners |
