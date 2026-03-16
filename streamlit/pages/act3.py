@@ -46,11 +46,25 @@ st.markdown(
     "conversion only through exposure."
 )
 
+with st.expander("IV Assumptions"):
+    st.markdown(
+        "Three assumptions are required for treatment assignment to be a valid instrument:\n\n"
+        "1. **Randomization.** Treatment assignment is independent of potential outcomes. "
+        "Verified in section 1.1: SMD < 0.1 across all covariates.\n"
+        "2. **Exclusion restriction.** Assignment affects conversion only through ad exposure. "
+        "Credible here: control users are never entered into auctions and never see ads. "
+        "This assumption is fundamentally untestable. It would fail if assignment has indirect "
+        "effects, for example if users share ads through word-of-mouth, creating spillover "
+        "to non-exposed users. For display advertising, this is unlikely.\n"
+        "3. **Monotonicity.** Assignment does not prevent exposure. True by design: treatment "
+        "enables auction participation, it never blocks it."
+    )
+
 iv_diag = load("iv_diagnostics.csv").iloc[0]
 
 # ── 3.2 Correlation evidence ──────────────────────────────────────────
 st.divider()
-st.subheader("3.2 Two Distinct Dimensions")
+st.subheader("3.2 Reachability ≠ Responsiveness")
 
 st.markdown(
     "If the decomposition is working, P(E) and LATE should capture genuinely different aspects "
@@ -109,6 +123,22 @@ st.markdown(
     "scores per user, which tell us not just who to target but why they score high."
 )
 
+st.markdown("")
+col1, col2, col3 = st.columns(3)
+with col1:
+    styled_metric("Mean LATE", "2.86pp", "24× the 0.12pp ITT")
+with col2:
+    styled_metric("Min LATE", "-7pp", "some users hurt by ads")
+with col3:
+    styled_metric("Max LATE", "48pp", "highly responsive segment")
+
+st.markdown(
+    "The range of LATE is massive. Mean LATE is 2.86pp, 24 times larger than the 0.12pp ITT "
+    "effect. This shows how much non-compliance dilutes the aggregate signal. The ITT averages "
+    "across millions of users who never saw the ad. LATE isolates the effect on users who were "
+    "actually reached, revealing that ad responsiveness varies from -7pp to 48pp across users."
+)
+
 perf = rename_strategies(load("performance_comparison.csv"))
 uplift_curves = rename_strategies(load("uplift_curves_comparison_sample.csv"))
 itt_test = load("itt_test.csv").iloc[0]
@@ -156,8 +186,9 @@ fig_uplift.update_layout(
 st.plotly_chart(fig_uplift, width="stretch")
 
 st.markdown(
-    "The uplift curves show aggregate ranking performance. The decile view below breaks down "
-    "the same comparison by ranking decile."
+    "The uplift curves show aggregate ranking performance. In raw Qini scores: CATE achieves "
+    "0.1753, P(E) alone reaches 0.1668 (95%), and the full P(E) x LATE(X) decomposition "
+    "reaches 0.1580 (90%). The decile view below breaks down the same comparison by ranking decile."
 )
 
 # Strategy decile comparison
@@ -354,24 +385,32 @@ st.info(
 st.divider()
 st.subheader("Summary")
 
-# exp_model = load("exposure_model_details.csv").iloc[0]
-
-# col1, col2, col3 = st.columns(3)
-# with col1:
-#     styled_metric("P(E) Model AUC", f"{exp_model['test_auc']:.3f}", "XGBoost classifier predicting ad exposure")
-# with col2:
-#     styled_metric("CATE vs P(E) Correlation", f"{iv_diag['cate_exposure_corr']:.3f}", "reachability dominates")
-# with col3:
-#     styled_metric("P(E) vs LATE Correlation", f"{iv_diag['exposure_late_corr']:.3f}", "distinct dimensions")
-
-st.markdown("")
-
 st.markdown("""
 <div style="background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1.2rem 1.5rem; margin: 0.5rem 0;">
 <strong>Key Takeaways:</strong><br><br>
 1. <strong>Standard uplift modeling works.</strong> CATE meta-learners correctly identify who benefits from ad assignment.<br>
 2. <strong>But CATE conflates two mechanisms.</strong> With high non-compliance, reachability and responsiveness are blended into one score.<br>
 3. <strong>IV decomposition separates them.</strong> Using treatment assignment as an instrument, we recover distinct reachability and responsiveness scores for each user.<br>
-4. <strong>The 10% Qini cost is a feature, not a bug.</strong> It trades ranking performance for operational control: the ability to bid high on responsive users, bid low on reachable ones, and skip the rest.
+4. <strong>The 10% Qini cost is a feature, not a bug.</strong> It trades ranking performance for operational control: the ability to bid high on responsive users, bid low on reachable ones, and skip the rest.<br>
+5. <strong>The business case remains unvalidated.</strong> No bid/cost data, untestable IV assumptions, and binary outcomes mean the ROI impact is an open question.
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("")
+
+st.markdown(
+    "Standard uplift modeling identifies who benefits from ad assignment. But with 96.4% "
+    "non-compliance, the CATE score blends reachability and responsiveness into a single "
+    "number. The IV decomposition separates them into two actionable dimensions at a 10% "
+    "ranking cost, enabling differentiated bidding that a single-score system cannot support.\n\n"
+    "That said, this analysis proves the decomposition works for separating mechanisms, but "
+    "cannot prove it improves ROI. The dataset does not include bid prices or conversion "
+    "values, so we cannot test whether strategic bidding based on P(E) and LATE actually "
+    "recovers the 10% ranking cost. The IV exclusion restriction is standard but fundamentally "
+    "untestable. And conversion is binary: a user who buys \$10 and a user who buys \$1,000 "
+    "look identical to the model. Validating the business case would require an A/B test "
+    "comparing CATE-based bidding against decomposition-based bidding with actual cost and "
+    "revenue data."
+)
+
+

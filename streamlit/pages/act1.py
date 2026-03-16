@@ -28,17 +28,9 @@ def compute_max_smd_summary(cov_bal: pd.DataFrame) -> list[dict]:
 st.header("Act 1: Uplift Modeling Works")
 st.markdown(
     "Before estimating treatment effects, we verify the experiment is sound. "
-    "Then we fit four meta-learners (S, T, X, R) to estimate CATE: how much does being "
+    "Then we fit four meta-learners (S, T, X, R) to estimate Conditional Average Treatment Effect (CATE): how much does being "
     "assigned to treatment group increase a user's conversion probability, conditional on their features?"
 )
-
-with st.expander("Intro to Uplift Models"):
-    st.markdown(
-        "Uplift modeling is a machine learning technique that predicts the incremental impact "
-        "of an action (in this case, an ad campaign) on an individual's behavior.\n\n"
-        "A more detailed explanation of meta-learners and uplift models is in the "
-        "[appendix](https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/appendix_learners.ipynb)."
-    )
 
 # ── 1.1 Randomization quality ──────────────────────────────────────────
 st.divider()
@@ -143,6 +135,24 @@ st.markdown(
     "The ITT effects are statistically significant but small. This is not because the ad does not work. "
     "It is because 96.4% of treated users never saw it. The signal is buried under non-compliance."
 )
+st.markdown("")
+col1, col2, col3 = st.columns(3)
+with col1:
+    styled_metric("Exposed Treated", "5.38%", "conversion rate")
+with col2:
+    styled_metric("Non-Exposed Treated", "0.12%", "conversion rate")
+with col3:
+    styled_metric("Control", "0.19%", "conversion rate")
+st.markdown("")
+st.markdown(
+    "The raw conversion rates sharpen the picture. Among treated users who actually saw ads, "
+    "the conversion rate is 5.38%. Among treated users who never saw ads, it is 0.12%, "
+    "nearly identical to the control group's 0.19%. But this does not mean the ad caused "
+    "all of that difference. Section 1.1 showed that exposed and non-exposed users differ "
+    "systematically. Users who end up seeing ads may already be more likely to convert. "
+    "The 5.38% reflects some combination of ad effectiveness and selection into exposure, "
+    "and this naive comparison cannot separate the two."
+)
 
 # ── 1.3 Meta-learner comparison ────────────────────────────────────────
 st.divider()
@@ -156,6 +166,20 @@ st.markdown(
     "A curve above the diagonal (random targeting) means the model identifies high-value users "
     "better than chance."
 )
+
+with st.expander("Intro to Uplift Models"):
+    st.markdown(
+        "Uplift modeling predicts the incremental impact of an action on an individual's behavior. "
+        "Each meta-learner uses a different strategy to estimate CATE:\n\n"
+        "- **S-Learner:** Trains a single model with treatment as a feature. Simple but can underestimate effects if treatment signal is weak.\n"
+        "- **T-Learner:** Trains separate models for treatment and control, then subtracts predictions. Works well when both groups are large.\n"
+        "- **X-Learner:** Extends T-Learner with propensity score weighting. Better for imbalanced treatment/control splits like this experiment's 85/15.\n"
+        "- **R-Learner:** Uses Robinson transformation for doubly robust estimation. More theoretically robust under model misspecification.\n\n"
+       "All four are implemented both from scratch and using EconML with XGBoost base learners, "
+        "with a 60/20/20 train/validation/test split. "
+        "A more detailed explanation is in the "
+        "[appendix](https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/appendix_learners.ipynb)."
+    )
 
 qini_scores = load("qini_scores.csv")
 qini_curves = load("qini_curves_sample.csv")
@@ -210,11 +234,13 @@ st.markdown(
     "All four learners outperform random targeting. Performance differences are small and "
     "concentrated in the lower portion of the distribution, where the signal is weakest. "
     "The top 5 to 10% of users look similar across learners.\n\n"
-    "X-Learner edges out slightly overall (Qini: 0.1753) and is used as the CATE baseline "
-    "for the rest of this analysis.\n\n"
+    "X-Learner edges out slightly overall (Qini: 0.1753). This is expected: X-Learner "
+    "extends T-Learner with propensity score weighting, which handles the 85/15 "
+    "treatment/control imbalance better than training separate models of very different "
+    "sizes. X-Learner is used as the CATE baseline for the rest of this analysis.\n\n"
     "One important caveat: these models estimate the effect of *assignment*, not the effect "
     "of *seeing the ad*. The non-compliance problem from 1.2 has not been solved. CATE tells "
-    "us who benefits from being entered into ad campaign, which is useful, but it does not "
+    "us who benefits from being entered into the ad campaign, which is useful, but it does not "
     "tell us who responds to the ad itself."
 )
 
@@ -263,9 +289,11 @@ fig_dec.update_layout(
 st.plotly_chart(fig_dec, width="stretch")
 
 st.markdown(
-    "The top decile shows uplift well above the ITT baseline, while all other deciles fall "
-    "short of ITT and the bottom deciles hover near zero. Across learners, the pattern is "
-    "consistent: most of the identifiable uplift concentrates in the top 10 to 20% of users."
+    "The top decile achieves 0.77pp uplift, 6.4 times the 0.12pp average ITT effect. "
+    "Every other decile falls below the ITT baseline, with the bottom decile at just 0.01pp. "
+    "Only the top 10% outperforms random targeting. This means selective targeting can "
+    "concentrate budget on the users who actually move the needle, rather than spreading it "
+    "across the full population where the signal is diluted by non-compliance."
 )
 
 # ── Summary ────────────────────────────────────────────────────────────
