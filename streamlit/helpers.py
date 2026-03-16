@@ -50,9 +50,18 @@ PLOTLY_LAYOUT = dict(
 )
 
 
+# Cache CSV reads from disk
 @st.cache_data
 def load(name: str) -> pd.DataFrame:
     return pd.read_csv(os.path.join(DATA_DIR, name))
+
+
+# Cache strategy column renaming applied to loaded DataFrames
+@st.cache_data
+def rename_strategies(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df["strategy"] = df["strategy"].map(STRATEGY_RENAME).fillna(df["strategy"])
+    return df
 
 
 def styled_metric(label: str, value: str, delta: str | None = None):

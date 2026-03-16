@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 
-from helpers import load, styled_metric, COLORS, PLOTLY_LAYOUT, STRATEGY_COLORS, STRATEGY_RENAME
+from helpers import load, styled_metric, COLORS, PLOTLY_LAYOUT, STRATEGY_COLORS, rename_strategies
 
 st.header("Act 3: Decomposing the Signal")
 st.markdown(
@@ -109,10 +109,8 @@ st.markdown(
     "scores per user, which tell us not just who to target but why they score high."
 )
 
-perf = load("performance_comparison.csv")
-perf["strategy"] = perf["strategy"].map(STRATEGY_RENAME).fillna(perf["strategy"])
-uplift_curves = load("uplift_curves_comparison_sample.csv")
-uplift_curves["strategy"] = uplift_curves["strategy"].map(STRATEGY_RENAME).fillna(uplift_curves["strategy"])
+perf = rename_strategies(load("performance_comparison.csv"))
+uplift_curves = rename_strategies(load("uplift_curves_comparison_sample.csv"))
 itt_test = load("itt_test.csv").iloc[0]
 n_test = itt_test["n_test"]
 
@@ -163,8 +161,7 @@ st.markdown(
 )
 
 # Strategy decile comparison
-strategy_decile = load("strategy_decile_uplift_sample.csv")
-strategy_decile["strategy"] = strategy_decile["strategy"].map(STRATEGY_RENAME).fillna(strategy_decile["strategy"])
+strategy_decile = rename_strategies(load("strategy_decile_uplift_sample.csv"))
 decile_order = list(reversed(strategy_decile["decile_label"].unique().tolist()))
 all_strategies = list(strategy_decile["strategy"].unique())
 selected_strategies_dec = st.multiselect(

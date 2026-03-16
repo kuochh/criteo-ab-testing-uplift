@@ -4,6 +4,27 @@ import plotly.graph_objects as go
 
 from helpers import load, styled_metric, COLORS, PLOTLY_LAYOUT, LEARNER_COLORS
 
+
+# Cache max |SMD| summary computed from covariate balance data
+@st.cache_data
+def compute_max_smd_summary(cov_bal: pd.DataFrame) -> list[dict]:
+    interp_map = {
+        "Treatment vs Control": "Balanced. Randomization is valid.",
+        "Exposed vs Control": "Imbalanced. Compliance is selective, not random.",
+        "Non-exposed vs Control": "Balanced. Neither group saw ads.",
+        "Exposed vs Non-exposed": "Imbalanced. Same compliance effect.",
+    }
+    rows = []
+    for comp in cov_bal["comparison"].unique():
+        sub = cov_bal[(cov_bal["comparison"] == comp) & (cov_bal["variable"].str.startswith("f"))]
+        rows.append({
+            "Comparison": comp,
+            "Max |SMD|": f"{sub['smd'].abs().max():.4f}",
+            "Interpretation": interp_map.get(comp, ""),
+        })
+    return rows
+
+
 st.header("Act 1: Uplift Modeling Works")
 st.markdown(
     "Before estimating treatment effects, we verify the experiment is sound. "
@@ -76,22 +97,7 @@ st.markdown(
     "comparisons (imbalanced) confirms that randomization is clean, but compliance is selective."
 )
 
-# Compute max |SMD| per comparison
-max_smd_rows = []
-interp_map = {
-    "Treatment vs Control": "Balanced. Randomization is valid.",
-    "Exposed vs Control": "Imbalanced. Compliance is selective, not random.",
-    "Non-exposed vs Control": "Balanced. Neither group saw ads.",
-    "Exposed vs Non-exposed": "Imbalanced. Same compliance effect.",
-}
-for comp in cov_bal["comparison"].unique():
-    sub = cov_bal[(cov_bal["comparison"] == comp) & (cov_bal["variable"].str.startswith("f"))]
-    max_smd_rows.append({
-        "Comparison": comp,
-        "Max |SMD|": f"{sub['smd'].abs().max():.4f}",
-        "Interpretation": interp_map.get(comp, ""),
-    })
-st.table(pd.DataFrame(max_smd_rows))
+st.table(pd.DataFrame(compute_max_smd_summary(cov_bal)).set_index("Comparison"))
 
 # ── 1.2 Non-compliance ─────────────────────────────────────────────────
 st.divider()
