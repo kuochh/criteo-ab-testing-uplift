@@ -16,7 +16,7 @@ st.markdown(
 st.divider()
 st.subheader("2.1 CATE Score Distribution")
 
-cate_pred = load("cate_predictions_test.csv")
+cate_pred = load("cate_predictions_test_sample.csv")
 learner_col = st.selectbox(
     "* Select Learner",
     ["x_cate", "s_cate", "t_cate", "r_cate"],

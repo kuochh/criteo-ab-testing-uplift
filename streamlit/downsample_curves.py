@@ -48,7 +48,20 @@ if os.path.exists(uplift_path):
 else:
     print("Skipping uplift_curves_comparison.csv (not found, sample already exists)")
 
-# 3. CATE vs P(E) scatter (section 2.3)
+# 3. CATE predictions test (section 2.1 histogram)
+cate_pred_path = os.path.join(DATA_DIR, "cate_predictions_test.csv")
+if os.path.exists(cate_pred_path):
+    print("Loading cate_predictions_test.csv...")
+    cate_pred = pd.read_csv(cate_pred_path)
+    print(f"  Original: {len(cate_pred):,} rows")
+    cate_pred_sampled = cate_pred.sample(n=min(10000, len(cate_pred)), random_state=42)
+    out_path = os.path.join(DATA_DIR, "cate_predictions_test_sample.csv")
+    cate_pred_sampled.to_csv(out_path, index=False)
+    print(f"  Sampled:  {len(cate_pred_sampled):,} rows -> {out_path}")
+else:
+    print("Skipping cate_predictions_test.csv (not found)")
+
+# 4. CATE vs P(E) scatter (section 2.3)
 print("Loading cate_vs_pe.csv...")
 cate_pe = pd.read_csv(os.path.join(DATA_DIR, "cate_vs_pe.csv"))
 print(f"  Original: {len(cate_pe):,} rows")
