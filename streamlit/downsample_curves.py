@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import os
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+RAW_DIR = os.path.join(os.path.dirname(__file__), "data", "raw")
+OUT_DIR = os.path.join(os.path.dirname(__file__), "data", "processed")
 N_POINTS = 1000  # points per learner/strategy
 
 
@@ -23,39 +24,39 @@ def downsample_curve(df: pd.DataFrame, group_col: str) -> pd.DataFrame:
 
 
 # 1. Qini curves (4 learners + Random)
-qini_path = os.path.join(DATA_DIR, "qini_curves.csv")
+qini_path = os.path.join(RAW_DIR, "qini_curves.csv")
 if os.path.exists(qini_path):
     print("Loading qini_curves.csv...")
     qini = pd.read_csv(qini_path)
     print(f"  Original: {len(qini):,} rows")
     qini_sampled = downsample_curve(qini, "learner")
-    out_path = os.path.join(DATA_DIR, "qini_curves_sample.csv")
+    out_path = os.path.join(OUT_DIR, "qini_curves_sample.csv")
     qini_sampled.to_csv(out_path, index=False)
     print(f"  Sampled:  {len(qini_sampled):,} rows -> {out_path}")
 else:
     print("Skipping qini_curves.csv (not found, sample already exists)")
 
 # 2. Uplift curves comparison (3 strategies + Random)
-uplift_path = os.path.join(DATA_DIR, "uplift_curves_comparison.csv")
+uplift_path = os.path.join(RAW_DIR, "uplift_curves_comparison.csv")
 if os.path.exists(uplift_path):
     print("Loading uplift_curves_comparison.csv...")
     uplift = pd.read_csv(uplift_path)
     print(f"  Original: {len(uplift):,} rows")
     uplift_sampled = downsample_curve(uplift, "strategy")
-    out_path = os.path.join(DATA_DIR, "uplift_curves_comparison_sample.csv")
+    out_path = os.path.join(OUT_DIR, "uplift_curves_comparison_sample.csv")
     uplift_sampled.to_csv(out_path, index=False)
     print(f"  Sampled:  {len(uplift_sampled):,} rows -> {out_path}")
 else:
     print("Skipping uplift_curves_comparison.csv (not found, sample already exists)")
 
 # 3. CATE predictions test (section 2.1 histogram)
-cate_pred_path = os.path.join(DATA_DIR, "cate_predictions_test.csv")
+cate_pred_path = os.path.join(RAW_DIR, "cate_predictions_test.csv")
 if os.path.exists(cate_pred_path):
     print("Loading cate_predictions_test.csv...")
     cate_pred = pd.read_csv(cate_pred_path)
     print(f"  Original: {len(cate_pred):,} rows")
     cate_pred_sampled = cate_pred.sample(n=min(10000, len(cate_pred)), random_state=42)
-    out_path = os.path.join(DATA_DIR, "cate_predictions_test_sample.csv")
+    out_path = os.path.join(OUT_DIR, "cate_predictions_test_sample.csv")
     cate_pred_sampled.to_csv(out_path, index=False)
     print(f"  Sampled:  {len(cate_pred_sampled):,} rows -> {out_path}")
 else:
@@ -63,27 +64,27 @@ else:
 
 # 4. CATE vs P(E) scatter (section 2.3)
 print("Loading cate_vs_pe.csv...")
-cate_pe = pd.read_csv(os.path.join(DATA_DIR, "cate_vs_pe.csv"))
+cate_pe = pd.read_csv(os.path.join(RAW_DIR, "cate_vs_pe.csv"))
 print(f"  Original: {len(cate_pe):,} rows")
 cate_pe_sampled = cate_pe.sample(n=min(10000, len(cate_pe)), random_state=42)
-out_path = os.path.join(DATA_DIR, "cate_vs_pe_sample.csv")
+out_path = os.path.join(OUT_DIR, "cate_vs_pe_sample.csv")
 cate_pe_sampled.to_csv(out_path, index=False)
 print(f"  Sampled:  {len(cate_pe_sampled):,} rows -> {out_path}")
 
 # 4. P(E) vs LATE scatter (section 3.3/3.4) - filter out negative LATE
 print("Loading pe_late_estimates.csv...")
-pe_late = pd.read_csv(os.path.join(DATA_DIR, "pe_late_estimates.csv"))
+pe_late = pd.read_csv(os.path.join(RAW_DIR, "pe_late_estimates.csv"))
 print(f"  Original: {len(pe_late):,} rows")
 pe_late_pos = pe_late[pe_late["late_x"] >= 0]
 print(f"  After filtering negative LATE: {len(pe_late_pos):,} rows")
 pe_late_sampled = pe_late_pos.sample(n=min(10000, len(pe_late_pos)), random_state=42)
-out_path = os.path.join(DATA_DIR, "pe_late_sample.csv")
+out_path = os.path.join(OUT_DIR, "pe_late_sample.csv")
 pe_late_sampled.to_csv(out_path, index=False)
 print(f"  Sampled:  {len(pe_late_sampled):,} rows -> {out_path}")
 
 # 5. Strategy decile uplift (section 3.2) - derived from uplift curves
 print("Computing strategy decile uplift from uplift_curves_comparison_sample.csv...")
-uplift_s = pd.read_csv(os.path.join(DATA_DIR, "uplift_curves_comparison_sample.csv"))
+uplift_s = pd.read_csv(os.path.join(OUT_DIR, "uplift_curves_comparison_sample.csv"))
 
 # Display name mapping for strategies
 display_names = {
@@ -125,7 +126,7 @@ for strategy_name, group in uplift_s.groupby("strategy", sort=False):
         })
 
 decile_df = pd.DataFrame(decile_rows)
-out_path = os.path.join(DATA_DIR, "strategy_decile_uplift_sample.csv")
+out_path = os.path.join(OUT_DIR, "strategy_decile_uplift_sample.csv")
 decile_df.to_csv(out_path, index=False)
 print(f"  Saved: {len(decile_df)} rows -> {out_path}")
 
